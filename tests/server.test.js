@@ -114,4 +114,19 @@ describe('API de Tarefas', () => {
     expect(response.body.status).toBe('OK');
     expect(response.body.timestamp).toBeDefined();
   });
+
+  test('GET /api/stats deve retornar estatísticas das tarefas', async () => {
+    const response = await request(app)
+      .get('/api/stats')
+      .expect(200);
+
+    expect(response.body).toHaveProperty('total');
+    expect(response.body).toHaveProperty('completed');
+    expect(response.body).toHaveProperty('pending');
+    expect(response.body).toHaveProperty('completionRate');
+    expect(typeof response.body.total).toBe('number');
+    expect(typeof response.body.completed).toBe('number');
+    expect(typeof response.body.pending).toBe('number');
+    expect(typeof response.body.completionRate).toBe('number');
+  });
 });
