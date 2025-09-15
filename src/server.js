@@ -88,6 +88,20 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Rota de estatísticas
+app.get('/api/stats', (req, res) => {
+  const totalTodos = todos.length;
+  const completedTodos = todos.filter(todo => todo.completed).length;
+  const pendingTodos = totalTodos - completedTodos;
+  
+  res.json({
+    total: totalTodos,
+    completed: completedTodos,
+    pending: pendingTodos,
+    completionRate: totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0
+  });
+});
+
 // Iniciar servidor apenas se não estiver em modo de teste
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
