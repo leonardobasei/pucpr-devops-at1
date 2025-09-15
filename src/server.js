@@ -44,10 +44,18 @@ app.post('/api/todos', (req, res) => {
     return res.status(400).json({ error: 'Título é obrigatório' });
   }
 
+  if (title.length < 3) {
+    return res.status(400).json({ error: 'Título deve ter pelo menos 3 caracteres' });
+  }
+
+  if (title.length > 100) {
+    return res.status(400).json({ error: 'Título deve ter no máximo 100 caracteres' });
+  }
+
   const newTodo = {
     id: uuidv4(),
-    title,
-    description: description || '',
+    title: title.trim(),
+    description: description ? description.trim() : '',
     completed: false,
     createdAt: new Date().toISOString()
   };
