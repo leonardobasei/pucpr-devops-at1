@@ -45,6 +45,7 @@ npm start
 - `POST /api/todos` - Cria uma nova tarefa
 - `PUT /api/todos/:id` - Atualiza uma tarefa
 - `DELETE /api/todos/:id` - Remove uma tarefa
+- `GET /api/stats` - Estatísticas das tarefas
 - `GET /health` - Health check
 
 ## Exemplo de uso
@@ -59,6 +60,11 @@ curl -X POST http://localhost:3000/api/todos \
 ### Listar tarefas
 ```bash
 curl http://localhost:3000/api/todos
+```
+
+### Ver estatísticas
+```bash
+curl http://localhost:3000/api/stats
 ```
 
 ## Testes
