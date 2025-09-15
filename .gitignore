@@ -9,3 +9,8 @@ yarn-error.log*
 .env.production.local
 .DS_Store
 *.log
+coverage/
+.nyc_output/
+.eslintcache
+*.tgz
+*.tar.gz
