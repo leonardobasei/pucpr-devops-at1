@@ -44,10 +44,18 @@ app.post('/api/todos', (req, res) => {
     return res.status(400).json({ error: 'Título é obrigatório' });
   }
 
+  if (title.length < 3) {
+    return res.status(400).json({ error: 'Título deve ter pelo menos 3 caracteres' });
+  }
+
+  if (title.length > 100) {
+    return res.status(400).json({ error: 'Título deve ter no máximo 100 caracteres' });
+  }
+
   const newTodo = {
     id: uuidv4(),
-    title,
-    description: description || '',
+    title: title.trim(),
+    description: description ? description.trim() : '',
     completed: false,
     createdAt: new Date().toISOString()
   };
@@ -86,6 +94,20 @@ app.delete('/api/todos/:id', (req, res) => {
 // Rota de health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Rota de estatísticas
+app.get('/api/stats', (req, res) => {
+  const totalTodos = todos.length;
+  const completedTodos = todos.filter(todo => todo.completed).length;
+  const pendingTodos = totalTodos - completedTodos;
+  
+  res.json({
+    total: totalTodos,
+    completed: completedTodos,
+    pending: pendingTodos,
+    completionRate: totalTodos > 0 ? Math.round((completedTodos / totalTodos) * 100) : 0
+  });
 });
 
 // Iniciar servidor apenas se não estiver em modo de teste

@@ -36,6 +36,25 @@ describe('API de Tarefas', () => {
     expect(response.body.error).toBe('Título é obrigatório');
   });
 
+  test('POST /api/todos com título muito curto deve retornar erro 400', async () => {
+    const response = await request(app)
+      .post('/api/todos')
+      .send({ title: 'AB' })
+      .expect(400);
+
+    expect(response.body.error).toBe('Título deve ter pelo menos 3 caracteres');
+  });
+
+  test('POST /api/todos com título muito longo deve retornar erro 400', async () => {
+    const longTitle = 'A'.repeat(101);
+    const response = await request(app)
+      .post('/api/todos')
+      .send({ title: longTitle })
+      .expect(400);
+
+    expect(response.body.error).toBe('Título deve ter no máximo 100 caracteres');
+  });
+
   test('GET /api/todos/:id deve retornar tarefa específica', async () => {
     // Primeiro, criar uma tarefa
     const createResponse = await request(app)
@@ -113,5 +132,20 @@ describe('API de Tarefas', () => {
 
     expect(response.body.status).toBe('OK');
     expect(response.body.timestamp).toBeDefined();
+  });
+
+  test('GET /api/stats deve retornar estatísticas das tarefas', async () => {
+    const response = await request(app)
+      .get('/api/stats')
+      .expect(200);
+
+    expect(response.body).toHaveProperty('total');
+    expect(response.body).toHaveProperty('completed');
+    expect(response.body).toHaveProperty('pending');
+    expect(response.body).toHaveProperty('completionRate');
+    expect(typeof response.body.total).toBe('number');
+    expect(typeof response.body.completed).toBe('number');
+    expect(typeof response.body.pending).toBe('number');
+    expect(typeof response.body.completionRate).toBe('number');
   });
 });
