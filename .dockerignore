@@ -7,6 +7,11 @@ README.md
 .nyc_output
 coverage
 .nyc_output
-.coverage
+.vscode
+.idea
+*.log
+.DS_Store
 tests
 jest.config.js
+.eslintrc.js
+.prettierrc
