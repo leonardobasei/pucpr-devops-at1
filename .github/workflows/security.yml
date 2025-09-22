@@ -48,18 +48,32 @@ jobs:
     
     - name: Check for secrets
       run: |
-        # Instalar TruffleHog
-        wget https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_3.63.3_linux_amd64.tar.gz
-        tar -xzf trufflehog_3.63.3_linux_amd64.tar.gz
+        # Instalar TruffleHog usando a versão mais recente disponível
+        echo "🔍 Instalando TruffleHog..."
+        
+        # Obter a versão mais recente
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/trufflesecurity/trufflehog/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        echo "📦 Versão mais recente: $LATEST_VERSION"
+        
+        # Baixar o arquivo correto baseado na versão
+        wget "https://github.com/trufflesecurity/trufflehog/releases/download/${LATEST_VERSION}/trufflehog_${LATEST_VERSION#v}_linux_amd64.tar.gz" -O trufflehog.tar.gz
+        
+        # Extrair e configurar
+        tar -xzf trufflehog.tar.gz
         chmod +x trufflehog
         
+        echo "✅ TruffleHog instalado com sucesso"
+        
         # Executar scan do repositório inteiro
+        echo "🔍 Executando scan de secrets..."
         ./trufflehog filesystem . --only-verified --format json --output trufflehog-results.json || echo "TruffleHog scan completed with findings"
         
         # Mostrar resumo dos resultados
         if [ -f trufflehog-results.json ]; then
-          echo "TruffleHog scan results:"
+          echo "📊 TruffleHog scan results:"
           cat trufflehog-results.json | head -20
+        else
+          echo "✅ Nenhum secret encontrado pelo TruffleHog"
         fi
     
     - name: Upload TruffleHog results
