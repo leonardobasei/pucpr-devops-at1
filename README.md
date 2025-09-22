@@ -74,6 +74,25 @@ Execute os testes com:
 npm test
 ```
 
+## GitHub Actions & CI/CD
+
+Este projeto inclui workflows automatizados para:
+
+- **CI/CD Pipeline** - Testes e build automático
+- **Code Quality** - Análise de código e linting
+- **Security** - Verificação de vulnerabilidades
+- **Discord Notifications** - Alertas em tempo real no Discord
+
+### Alertas do Discord
+
+Configure alertas automáticos para:
+- Commits no branch main
+- Pull Requests abertas/fechadas/mergeadas
+- Execução de workflows
+- Issues e releases
+
+📖 [Guia de configuração do Discord](DISCORD_SETUP.md)
+
 ## Tecnologias utilizadas
 
 - Node.js
@@ -81,3 +100,5 @@ npm test
 - Docker
 - Jest (testes)
 - Supertest (testes de API)
+- GitHub Actions
+- Discord Webhooks
