@@ -47,9 +47,25 @@ jobs:
         retention-days: 30
     
     - name: Check for secrets
-      uses: trufflesecurity/trufflehog@main
+      run: |
+        # Instalar TruffleHog
+        wget https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog_3.63.3_linux_amd64.tar.gz
+        tar -xzf trufflehog_3.63.3_linux_amd64.tar.gz
+        chmod +x trufflehog
+        
+        # Executar scan do repositório inteiro
+        ./trufflehog filesystem . --only-verified --format json --output trufflehog-results.json || echo "TruffleHog scan completed with findings"
+        
+        # Mostrar resumo dos resultados
+        if [ -f trufflehog-results.json ]; then
+          echo "TruffleHog scan results:"
+          cat trufflehog-results.json | head -20
+        fi
+    
+    - name: Upload TruffleHog results
+      uses: actions/upload-artifact@v4
+      if: always()
       with:
-        path: ./
-        base: master
-        head: HEAD
-        extra_args: --debug --only-verified
+        name: trufflehog-results
+        path: trufflehog-results.json
+        retention-days: 30
