@@ -62,20 +62,20 @@ jobs:
       uses: docker/setup-buildx-action@v3
     
     - name: Build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: false
-        tags: todo-api:${{ github.sha }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      run: |
+        docker build -t todo-api:${{ github.sha }} .
     
     - name: Test Docker image
       run: |
+        # Executar o container
         docker run -d -p 3000:3000 --name test-container todo-api:${{ github.sha }}
         sleep 15
+        
+        # Testar endpoints
         curl -f http://localhost:3000/health || exit 1
         curl -f http://localhost:3000/api/todos || exit 1
+        
+        # Limpar
         docker stop test-container
         docker rm test-container
     
