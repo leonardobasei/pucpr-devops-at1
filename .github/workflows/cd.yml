@@ -2,11 +2,11 @@ name: Continuous Deployment
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   workflow_run:
     workflows: ["Continuous Integration"]
     types: [completed]
-    branches: [ main ]
+    branches: [ master ]
 
 env:
   REGISTRY: ghcr.io
