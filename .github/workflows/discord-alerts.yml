@@ -1,0 +1,136 @@
+name: Discord Alerts
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    types: [opened, closed, merged]
+    branches: [ master ]
+
+jobs:
+  discord-notification:
+    name: Send Discord Alert
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Determine event type and status
+      id: event
+      run: |
+        # Determinar tipo de evento e status
+        if [ "${{ github.event_name }}" = "push" ]; then
+          EVENT_TYPE="🚀 **Commit Realizado**"
+          if [ "${{ github.ref_name }}" = "master" ]; then
+            STATUS_EMOJI="🔥"
+            STATUS_TEXT="Commit na branch MASTER (Produção)"
+            COLOR="16711680"  # Vermelho para master
+          else
+            STATUS_EMOJI="🛠️"
+            STATUS_TEXT="Commit na branch DEVELOP (Desenvolvimento)"
+            COLOR="16776960"  # Amarelo para develop
+          fi
+        elif [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ "${{ github.event.action }}" = "opened" ]; then
+            EVENT_TYPE="📝 **Pull Request Aberta**"
+            STATUS_EMOJI="🆕"
+            STATUS_TEXT="Nova PR para master"
+            COLOR="3447003"  # Azul
+          elif [ "${{ github.event.action }}" = "closed" ] && [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+            EVENT_TYPE="🔀 **MERGE REALIZADO**"
+            STATUS_EMOJI="✅"
+            STATUS_TEXT="PR foi MERGEADA na master!"
+            COLOR="65280"  # Verde
+          elif [ "${{ github.event.action }}" = "closed" ]; then
+            EVENT_TYPE="❌ **Pull Request Fechada**"
+            STATUS_EMOJI="❌"
+            STATUS_TEXT="PR foi fechada sem merge"
+            COLOR="10038562"  # Cinza
+          fi
+        fi
+        
+        echo "event_type=$EVENT_TYPE" >> $GITHUB_OUTPUT
+        echo "status_emoji=$STATUS_EMOJI" >> $GITHUB_OUTPUT
+        echo "status_text=$STATUS_TEXT" >> $GITHUB_OUTPUT
+        echo "color=$COLOR" >> $GITHUB_OUTPUT
+    
+    - name: Create Discord message
+      run: |
+        # Criar mensagem formatada para Discord
+        cat > discord_message.json << EOF
+        {
+          "username": "GitHub Actions Bot",
+          "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+          "embeds": [
+            {
+              "title": "${{ steps.event.outputs.event_type }}",
+              "description": "${{ steps.event.outputs.status_emoji }} ${{ steps.event.outputs.status_text }}",
+              "color": ${{ steps.event.outputs.color }},
+              "fields": [
+                {
+                  "name": "📁 Repositório",
+                  "value": "${{ github.repository }}",
+                  "inline": true
+                },
+                {
+                  "name": "🌿 Branch",
+                  "value": "${{ github.ref_name }}",
+                  "inline": true
+                },
+                {
+                  "name": "👤 Autor",
+                  "value": "${{ github.actor }}",
+                  "inline": true
+                },
+                {
+                  "name": "🔗 Commit",
+                  "value": "[${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})",
+                  "inline": false
+                },
+                {
+                  "name": "💬 Mensagem",
+                  "value": "${{ github.event.head_commit.message || github.event.pull_request.title || 'N/A' }}",
+                  "inline": false
+                }
+              ],
+              "footer": {
+                "text": "GitHub Actions • ${{ github.workflow }}",
+                "icon_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+              },
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            }
+          ]
+        }
+        EOF
+        
+        # Adicionar campo específico para PRs
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          jq '.embeds[0].fields += [{"name": "🔗 Pull Request", "value": "[#${{ github.event.pull_request.number }}](${{ github.event.pull_request.html_url }})", "inline": false}]' discord_message.json > temp.json && mv temp.json discord_message.json
+        fi
+    
+    - name: Send Discord notification
+      if: env.DISCORD_WEBHOOK_URL != ''
+      run: |
+        echo "📤 Enviando notificação para o Discord..."
+        curl -X POST \
+             -H "Content-Type: application/json" \
+             -d @discord_message.json \
+             ${{ secrets.DISCORD_WEBHOOK_URL }}
+        echo "✅ Notificação enviada com sucesso!"
+    
+    - name: Debug (if webhook not configured)
+      if: env.DISCORD_WEBHOOK_URL == ''
+      run: |
+        echo "⚠️ DISCORD_WEBHOOK_URL não configurado!"
+        echo ""
+        echo "📋 Para configurar:"
+        echo "1. Acesse seu servidor Discord"
+        echo "2. Vá em Configurações do Servidor > Integrações > Webhooks"
+        echo "3. Crie um novo webhook e copie a URL"
+        echo "4. No GitHub: Settings > Secrets and variables > Actions"
+        echo "5. Adicione secret 'DISCORD_WEBHOOK_URL' com a URL do webhook"
+        echo ""
+        echo "📄 Mensagem que seria enviada:"
+        cat discord_message.json
