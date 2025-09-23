@@ -12,6 +12,9 @@ jobs:
     name: Send Discord Notification
     runs-on: ubuntu-latest
     if: always()
+
+    env:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
     
     steps:
     - name: Checkout code
