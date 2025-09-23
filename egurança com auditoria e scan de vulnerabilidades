@@ -1,6 +1,0 @@
-[33mb170ef2[m[33m ([m[1;36mHEAD -> [m[1;32mdevelop[m[33m)[m docs: atualizar documentação com novas funcionalidades
-[33mb5ef720[m test: adicionar testes para validação de entrada
-[33m43a4351[m feat: melhorar validação de entrada
-[33m375d556[m test: adicionar teste para endpoint de estatísticas
-[33m4162be3[m feat: adicionar endpoint de estatísticas
-[33mc7f1900[m[33m ([m[1;32mmaster[m[33m)[m feat: implementação inicial da API REST de tarefas
